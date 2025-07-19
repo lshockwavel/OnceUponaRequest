@@ -8,9 +8,9 @@ export class StoryController extends BaseController {
     constructor() {
         super('api/stories');
         this.router
+        .get('', this.getAllStories)
+        .get('/:storyId', this.getStoryById)
             .use(Auth0Provider.getAuthorizedUserInfo)
-            .get('', this.getAllStories)
-            .get('/:storyId', this.getStoryById)
             .post('', this.createStory)
             .put('/:storyId', this.updateStory)
             .delete('/:storyId', this.deleteStory);
@@ -29,8 +29,8 @@ export class StoryController extends BaseController {
     async getStoryById(req, res, next) {
         try {
             const storyId = req.params.storyId;
-            const userId = req.userInfo.id;
-            const story = await storiesService.getStoryById(storyId, userId);
+            // const userId = req.userInfo.id;
+            const story = await storiesService.getStoryById(storyId);
             return res.send(story);
         } catch (error) {
             next(error);
@@ -69,8 +69,8 @@ export class StoryController extends BaseController {
             const storyId = req.params.storyId;
             const userId = req.userInfo.id;
 
-            await storiesService.deleteStory(storyId, userId);
-            return res.status(200).send();
+           const message = await storiesService.deleteStory(storyId, userId);
+            return res.send(message);
         } catch (error) {
             next(error);
         }

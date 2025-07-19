@@ -12,15 +12,12 @@ class StoriesService {
         return stories;
     }
 
-    async getStoryById(storyId, userId) {
+    async getStoryById(storyId) {
         const story = await dbContext.Story.findById(storyId).populate('author prompt');
-        if (story.authorId != userId) {
-            throw new Forbidden("You do not have permission to view this story");
-        }
-
         if (!story) {
             throw new Error("Story not found");
         }
+  
         return story;
     }
 
@@ -30,7 +27,11 @@ class StoriesService {
     }
 
     async updateStory(storyData, userId) {
-        const storyOriginal = await this.getStoryById(storyData.id, userId);
+        const storyOriginal = await this.getStoryById(storyData.id);
+              if (storyOriginal.authorId != userId) {
+            throw new Forbidden("You do not have permission to view this story");
+        }
+
         storyOriginal.body = storyData.body ?? storyOriginal.body; // Update the body of the story
         storyOriginal.title = storyData.title ?? storyOriginal.title; // Update the title of the story
         storyOriginal.promptId = storyData.promptId ?? storyOriginal.promptId; // Update the promptId of the story
@@ -40,7 +41,11 @@ class StoriesService {
 
     async deleteStory(storyId, userId) {
 
-        const story = await this.getStoryById(storyId, userId);
+        const story = await this.getStoryById(storyId);
+        if (story.authorId != userId) {
+            throw new Forbidden("You do not have permission to view this story");
+        }
+
         await story.deleteOne();
         return `${story.title} has been deleted`;
     }
